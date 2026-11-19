@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#5B21B6">
+  <title>CAHAYA MEGA — The Paint Specialist</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 68'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23FEF08A'/%3E%3Cstop offset='100%25' stop-color='%23F59E0B'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='68' rx='14' fill='%234E2A77'/%3E%3Cpath d='M14 54 L7 44 L16 42 L12 31 L21 31 L20 19 L29 22 L32 10 L40 16 L46 5 L52 13 L61 5 L64 15 L74 10 L74 21 L85 19 L81 30 L92 32 L85 41 L94 46 L86 54 L72 54 A22 22 0 0 0 28 54 Z' fill='url(%23g)'/%3E%3Crect x='8' y='57' width='84' height='4' rx='2' fill='%23FDE68A'/%3E%3C/svg%3E">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: linear-gradient(135deg, #3B0764 0%, #6D28D9 55%, #D97706 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #FFFFFF;
+    }
+
+    /* Frame layar penuh pembungkus Web App Google Apps Script */
+    .app-frame {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100dvh;
+      border: none;
+      display: block;
+      background: #F7F4EF;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+
+    .app-frame.ready {
+      opacity: 1;
+    }
+
+    /* Layar loading awal bernuansa ungu terang & emas cahaya matahari */
+    .splash-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 24px;
+      text-align: center;
+      background:
+        radial-gradient(circle at 82% 18%, rgba(254, 240, 138, 0.36) 0%, rgba(245, 158, 11, 0.14) 36%, rgba(91, 33, 182, 0) 68%),
+        linear-gradient(135deg, #3B0764 0%, #6D28D9 52%, #9333EA 100%);
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+
+    .splash-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-card {
+      max-width: 440px;
+      width: 100%;
+      padding: 28px 24px;
+      border-radius: 22px;
+      background: rgba(34, 12, 64, 0.46);
+      border: 1px solid rgba(253, 230, 138, 0.34);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 24px 54px rgba(28, 7, 56, 0.42);
+    }
+
+    .splash-logo {
+      width: 84px;
+      height: auto;
+      margin-bottom: 10px;
+      filter: drop-shadow(0 6px 14px rgba(245, 158, 11, 0.45));
+    }
+
+    .splash-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: linear-gradient(95deg, #FFFFFF 0%, #FEF08A 65%, #F59E0B 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .splash-sub {
+      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.86);
+      margin-top: 4px;
+      letter-spacing: 0.03em;
+    }
+
+    .spinner-ring {
+      width: 34px;
+      height: 34px;
+      margin: 18px auto 8px;
+      border-radius: 50%;
+      border: 3px solid rgba(254, 240, 138, 0.25);
+      border-top-color: #FDE047;
+      animation: spinLoader 0.85s linear infinite;
+    }
+
+    @keyframes spinLoader {
+      to { transform: rotate(360deg); }
+    }
+
+    .splash-status {
+      font-size: 0.8rem;
+      color: #FEF3C7;
+      line-height: 1.5;
+    }
+
+    .setup-box {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(254, 243, 199, 0.12);
+      border: 1px solid rgba(253, 224, 71, 0.42);
+      font-size: 0.78rem;
+      color: #FEF9C3;
+      text-align: left;
+      line-height: 1.55;
+    }
+
+    .setup-box strong {
+      color: #FDE047;
+    }
+  </style>
+</head>
+<body>
+  <div id="splashScreen" class="splash-screen">
+    <div class="splash-card">
+      <svg class="splash-logo" viewBox="0 0 100 68" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="wrapGold" x1="10" y1="8" x2="90" y2="58" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#FFFFFF"/>
+            <stop offset="55%" stop-color="#FDE68A"/>
+            <stop offset="100%" stop-color="#F59E0B"/>
+          </linearGradient>
+        </defs>
+        <path d="M14 58 L7 48 L16 46 L12 35 L21 35 L20 23 L29 26 L32 14 L40 20 L46 9 L52 17 L61 9 L64 19 L74 14 L74 25 L85 23 L81 34 L92 36 L85 45 L94 50 L86 58 L72 58 A22 22 0 0 0 28 58 Z" fill="url(#wrapGold)"/>
+        <path d="M33 56 L67 56 L67 54 L62 54 C62 50 61 48 59 48 C57 48 56 50 56 53 L50 53 L43 43 L41 44 L46 53 L41 53 L42 46 L38 45 L35 54 L33 54 Z" fill="#FFFFFF"/>
+        <rect x="6" y="61" width="88" height="3.5" rx="1.75" fill="#FDE68A"/>
+      </svg>
+      <div class="splash-title">CAHAYA MEGA</div>
+      <div class="splash-sub">The Paint Specialist</div>
+      <div id="spinnerRing" class="spinner-ring"></div>
+      <div id="splashStatus" class="splash-status">Memuat aplikasi Cahaya Mega...</div>
+      <div id="setupBox" class="setup-box">
+        <strong>Langkah Aktivasi Pembungkus:</strong><br>
+        1. Buka file <strong>wrapper.html</strong> ini (atau ubah namanya menjadi <strong>index.html</strong> di hosting/GitHub Pages/Netlify/Vercel Anda).<br>
+        2. Ganti nilai <strong>WEB_APP_URL</strong> di baris skrip dengan URL Deploy Web App Google Apps Script Anda yang berakhiran <strong>/exec</strong>.<br>
+        3. Simpan dan unggah ke hosting Anda.
+      </div>
+    </div>
+  </div>
+
+  <iframe
+    id="gasAppFrame"
+    class="app-frame"
+    title="CAHAYA MEGA — The Paint Specialist"
+    allow="clipboard-read; clipboard-write"
+    allowfullscreen
+  ></iframe>
+
+  <script>
+    // =========================================================================
+    // TEMPELKAN URL WEB APP GOOGLE APPS SCRIPT ANDA (BERAKHIRAN /exec) DI SINI
+    // Contoh: 'https://script.google.com/macros/s/AKfycb.../exec'
+    // =========================================================================
+    var WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbygWjk3N4EL2ZJYMfbxsAtwpYX0skf3LiAFqtesRDaM-fb77VtOcqHOQUqzhYjmWIts/exec';
+
+    (function initWrapper() {
+      var frame = document.getElementById('gasAppFrame');
+      var splash = document.getElementById('splashScreen');
+      var statusEl = document.getElementById('splashStatus');
+      var spinnerEl = document.getElementById('spinnerRing');
+      var setupBox = document.getElementById('setupBox');
+
+      var isConfigured = WEB_APP_URL &&
+        WEB_APP_URL.indexOf('https://script.google.com/') === 0 &&
+        WEB_APP_URL.indexOf('PASTE_URL') === -1;
+
+      if (!isConfigured) {
+        if (spinnerEl) spinnerEl.style.display = 'none';
+        if (statusEl) statusEl.textContent = 'URL Web App Google Apps Script belum dipasang.';
+        if (setupBox) setupBox.style.display = 'block';
+        return;
+      }
+
+      // Teruskan parameter query URL (jika ada) ke Google Apps Script
+      var queryStr = window.location.search || '';
+      var targetUrl = WEB_APP_URL;
+      if (queryStr) {
+        targetUrl = WEB_APP_URL + (WEB_APP_URL.indexOf('?') === -1 ? queryStr : '&' + queryStr.substring(1));
+      }
+
+      frame.addEventListener('load', function() {
+        frame.classList.add('ready');
+        if (splash) splash.classList.add('hidden');
+      });
+
+      frame.src = targetUrl;
+
+      // Fallback otomatis hilangkan splash jika load event tertunda
+      setTimeout(function() {
+        frame.classList.add('ready');
+        if (splash) splash.classList.add('hidden');
+      }, 6000);
+    })();
+  </script>
+</body>
+</html>
